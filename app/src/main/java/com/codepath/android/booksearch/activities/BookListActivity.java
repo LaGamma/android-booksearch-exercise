@@ -35,6 +35,25 @@ public class BookListActivity extends AppCompatActivity {
     private BookAdapter bookAdapter;
     private BookClient client;
     private ArrayList<Book> abooks;
+    private MenuItem miActionProgressItem;
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Store instance of the menu item containing progress
+        miActionProgressItem = menu.findItem(R.id.miActionProgress);
+        // Return to finish
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    public void showProgressBar() {
+        // Show progress item
+        miActionProgressItem.setVisible(true);
+    }
+
+    public void hideProgressBar() {
+        // Hide progress item
+        miActionProgressItem.setVisible(false);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +98,7 @@ public class BookListActivity extends AppCompatActivity {
     // Executes an API call to the OpenLibrary search endpoint, parses the results
     // Converts them into an array of book objects and adds them to the adapter
     void fetchBooks(String query) {
+        showProgressBar();
         client = new BookClient();
         client.getBooks(query, new JsonHttpResponseHandler() {
 
@@ -103,13 +123,14 @@ public class BookListActivity extends AppCompatActivity {
                     // Invalid JSON format, show appropriate error.
                     e.printStackTrace();
                 }
+                hideProgressBar();
             }
 
             @Override
             public void onFailure(int statusCode, Headers headers, String responseString, Throwable throwable) {
                 // Handle failed request here
-                Log.e(BookListActivity.class.getSimpleName(),
-                        "Request failed with code " + statusCode + ". Response message: " + responseString);
+                Log.e(BookListActivity.class.getSimpleName(),"Request failed with code " + statusCode + ". Response message: " + responseString);
+                hideProgressBar();
             }
         });
     }
@@ -128,7 +149,6 @@ public class BookListActivity extends AppCompatActivity {
                 // workaround to avoid issues with some emulators and keyboard devices firing twice if a keyboard enter is used
                 // see https://code.google.com/p/android/issues/detail?id=24599
                 searchView.clearFocus();
-
                 return true;
             }
 
@@ -146,7 +166,6 @@ public class BookListActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
